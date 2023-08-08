@@ -9,6 +9,9 @@
   fuzz = { runs = 5000 }
   invariant = { runs = 1000 }
 
+[rpc_endpoints]
+  optimism_goerli = "${OPTIMISM_GOERLI_RPC_URL}"
+
 [profile.lite]
   fuzz = { runs = 50 }
   invariant = { runs = 10 }
