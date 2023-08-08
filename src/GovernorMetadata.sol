@@ -6,9 +6,9 @@ import {IStateQueryGateway, StateQuery} from "src/interfaces/IStateQueryGateway.
 import {IL1Block} from "src/interfaces/IL1Block.sol";
 
 contract L1GovernorMetadata {
-  IStateQueryGateway public immutable stateQueryGateway;
+  IStateQueryGateway public immutable STATE_QUERY_GATEWAY;
   uint32 public immutable L1_CHAIN;
-  IL1Block public immutable l1Block;
+  IL1Block public immutable L1_BLOCK;
   address public immutable L1_GOVERNOR_ADDR;
 
   struct Proposal {
@@ -19,21 +19,21 @@ contract L1GovernorMetadata {
   mapping(uint256 => Proposal) public proposals;
 
   constructor(address _stateQueryGateway, uint32 _chain, address _l1Governor, address _l1Block) {
-    stateQueryGateway = IStateQueryGateway(_stateQueryGateway);
+    STATE_QUERY_GATEWAY = IStateQueryGateway(_stateQueryGateway);
     L1_CHAIN = _chain;
     L1_GOVERNOR_ADDR = _l1Governor;
-    l1Block = IL1Block(_l1Block);
+    L1_BLOCK = IL1Block(_l1Block);
   }
 
-  function requestProposalSnapshot(uint256 proposalId) internal {
+  function _requestProposalSnapshot(uint256 proposalId) internal {
     StateQuery memory stateQuery = StateQuery({
       chainId: L1_CHAIN,
-      blockNumber: l1Block.number(),
+      blockNumber: L1_BLOCK.number(),
       fromAddress: address(0),
       toAddress: L1_GOVERNOR_ADDR,
       toCalldata: abi.encodeWithSelector(IGovernor.proposalSnapshot.selector, proposalId)
     });
-    stateQueryGateway.requestStateQuery(
+    STATE_QUERY_GATEWAY.requestStateQuery(
       stateQuery,
       L1GovernorMetadata.storeProposalSnapshot.selector, // Which function to call after async call
         // is done
@@ -41,7 +41,7 @@ contract L1GovernorMetadata {
     );
   }
 
-  function requestProposalDeadline(uint256 proposalId) internal {
+  function _requestProposalDeadline(uint256 proposalId) internal {
     StateQuery memory stateQuery = StateQuery({
       chainId: L1_CHAIN,
       blockNumber: l1Block.number(),
@@ -49,7 +49,7 @@ contract L1GovernorMetadata {
       toAddress: L1_GOVERNOR_ADDR,
       toCalldata: abi.encodeWithSelector(IGovernor.proposalDeadline.selector, proposalId)
     });
-    stateQueryGateway.requestStateQuery(
+    STATE_QUERY_GATEWAY.requestStateQuery(
       stateQuery,
       L1GovernorMetadata.storeProposalDeadline.selector, // Which function to call after async call
         // is done
@@ -60,7 +60,7 @@ contract L1GovernorMetadata {
   function storeProposalSnapshot(bytes memory _requestResult, bytes memory _callbackExtraData)
     external
   {
-    require(msg.sender == address(stateQueryGateway));
+    require(msg.sender == address(STATE_QUERY_GATEWAY));
     uint256 voteEnd = abi.decode(_requestResult, (uint256));
     (uint256 proposalId) = abi.decode(_callbackExtraData, (uint256));
 
@@ -71,7 +71,7 @@ contract L1GovernorMetadata {
   function storeProposalDeadline(bytes memory _requestResult, bytes memory _callbackExtraData)
     external
   {
-    require(msg.sender == address(stateQueryGateway));
+    require(msg.sender == address(STATE_QUERY_GATEWAY));
     uint256 voteStart = abi.decode(_requestResult, (uint256));
     (uint256 proposalId) = abi.decode(_callbackExtraData, (uint256));
 
@@ -82,8 +82,8 @@ contract L1GovernorMetadata {
   function getL1Proposal(uint256 proposalId) public returns (Proposal memory, bool) {
     Proposal memory proposal = proposals[proposalId];
     if (proposal.voteStart == 0) {
-      requestProposalSnapshot(proposalId);
-      requestProposalDeadline(proposalId);
+      _requestProposalSnapshot(proposalId);
+      _requestProposalDeadline(proposalId);
       return (proposal, false);
     }
     return (proposal, true);
