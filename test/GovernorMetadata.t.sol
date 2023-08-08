@@ -16,17 +16,16 @@ contract L1MetadataTest is Test {
     L1GovernorMetadata _l1GovernorMetadata = new L1GovernorMetadata(
       STATE_QUERY_GATEWAY_OPTIMISM_GOERLI, ETHEREUM_MAINNET_CHAIN_ID, NOUNS_L1_GOVERNOR, L1_BLOCK_ADDRESS
     );
-	  l1GovernorMetadata = _l1GovernorMetadata;
+    l1GovernorMetadata = _l1GovernorMetadata;
   }
 }
 
-
-
 contract getL1Proposal is L1MetadataTest {
   function testForkFuzz_GetL1ProposalNoProposal(uint256 proposalId) public {
-	(L1GovernorMetadata.Proposal memory proposal, bool exists) =	  l1GovernorMetadata.getL1Proposal(proposalId);
-	assertEq(exists, false);
-	assertEq(proposal.voteStart, 0);
-	assertEq(proposal.voteEnd, 0);
+    (L1GovernorMetadata.Proposal memory proposal, bool exists) =
+      l1GovernorMetadata.getL1Proposal(proposalId);
+    assertEq(exists, false);
+    assertEq(proposal.voteStart, 0);
+    assertEq(proposal.voteEnd, 0);
   }
 }
