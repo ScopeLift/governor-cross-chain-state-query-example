@@ -44,7 +44,7 @@ contract L1GovernorMetadata {
   function _requestProposalDeadline(uint256 proposalId) internal {
     StateQuery memory stateQuery = StateQuery({
       chainId: L1_CHAIN,
-      blockNumber: l1Block.number(),
+      blockNumber: L1_BLOCK.number(),
       fromAddress: address(0),
       toAddress: L1_GOVERNOR_ADDR,
       toCalldata: abi.encodeWithSelector(IGovernor.proposalDeadline.selector, proposalId)
