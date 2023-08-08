@@ -16,7 +16,6 @@ contract L1GovernorMetadata {
     uint256 voteEnd;
   }
 
-  /// @notice The id of the proposal mapped to the proposal metadata.
   mapping(uint256 => Proposal) public proposals;
 
   constructor(address _stateQueryGateway, uint32 _chain, address _l1Governor, address _l1Block) {
@@ -80,13 +79,13 @@ contract L1GovernorMetadata {
     proposals[proposalId] = Proposal({voteStart: voteStart, voteEnd: proposal.voteEnd});
   }
 
-  function getL1Proposal(uint256 proposalId) public {
+  function getL1Proposal(uint256 proposalId) public returns (Proposal memory, bool) {
     Proposal memory proposal = proposals[proposalId];
     if (proposal.voteStart == 0) {
       requestProposalSnapshot(proposalId);
       requestProposalDeadline(proposalId);
-      return;
+      return (proposal, false);
     }
-    return;
+    return (proposal, true);
   }
 }
